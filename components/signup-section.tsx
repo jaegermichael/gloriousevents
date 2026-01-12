@@ -11,19 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { CheckCircle2, Calendar, DollarSign, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/client"
-import { getAssignedDay, roleOptions } from "@/lib/role-day-mapping"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-const EVENT_DAYS = [
-  { day: 1, date: "January 26, 2026" },
-  { day: 2, date: "January 27, 2026" },
-  { day: 3, date: "January 28, 2026" },
-  { day: 4, date: "January 29, 2026" },
-  { day: 5, date: "January 30, 2026" },
-]
+import { EVENT_SESSIONS } from "@/lib/schedule-data"
 
 const SINGLE_DAY_PRICE = 50
-const FULL_WEEK_PRICE = 300
 const PER_DAY_PRICE = 50
 
 const CASH_OFFICE_ADDRESS = "Your office address here"
@@ -34,8 +25,10 @@ function formatSelectedDays(days: number[]): string {
   const sorted = [...days].sort((a, b) => a - b)
   return sorted
     .map((day) => {
-      const dayInfo = EVENT_DAYS.find((d) => d.day === day)
-      return dayInfo ? `Day ${day} - ${dayInfo.date}` : `Day ${day}`
+      const session = EVENT_SESSIONS.find((s) => s.day === day)
+      return session
+        ? `Day ${session.day} - ${session.dateFull} - ${session.title}`
+        : `Day ${day}`
     })
     .join(", ")
 }
@@ -49,34 +42,16 @@ export function SignUpSection() {
     organization: "",
     companyEmail: "",
     companyPhone: "",
-    role: "",
-    roleOther: "",
   })
-  const [ticketType, setTicketType] = useState<"single" | "full_week" | "custom_days">("single")
+  const [ticketType, setTicketType] = useState<"single" | "custom_days">("single")
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [paymentMethod, setPaymentMethod] = useState<string>("")
-  const [assignedDay, setAssignedDay] = useState<{ day: number; date: string; description: string } | null>(null)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paymentLink, setPaymentLink] = useState<string>("")
 
-  const ticketPrice =
-    ticketType === "single"
-      ? SINGLE_DAY_PRICE
-      : ticketType === "full_week"
-        ? FULL_WEEK_PRICE
-        : selectedDays.length * PER_DAY_PRICE
-
-  const handleRoleChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      role: value,
-      roleOther: value === "Other" ? prev.roleOther : "",
-    }))
-    const dayInfo = getAssignedDay(value)
-    setAssignedDay(dayInfo)
-  }
+  const ticketPrice = ticketType === "single" ? SINGLE_DAY_PRICE : selectedDays.length * PER_DAY_PRICE
 
   const toggleDay = (day: number) => {
     setSelectedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]))
@@ -92,24 +67,12 @@ export function SignUpSection() {
         throw new Error("Please select a payment method")
       }
 
-      const trimmedOtherRole = formData.roleOther?.trim() ?? ""
-      const finalRole = formData.role === "Other" && trimmedOtherRole ? trimmedOtherRole : formData.role
-
-      if (!finalRole) {
-        throw new Error("Please select your role")
-      }
-
       let assignedDayValue = 1
       let assignedDateValue = ""
 
       if (ticketType === "single") {
-        const dayInfo = getAssignedDay(finalRole)
-        setAssignedDay(dayInfo)
-        assignedDayValue = dayInfo.day
-        assignedDateValue = dayInfo.date
-      } else if (ticketType === "full_week") {
         assignedDayValue = 0
-        assignedDateValue = "Full week (Days 1–5)"
+        assignedDateValue = "Single Day Pass"
       } else {
         if (selectedDays.length === 0) {
           throw new Error("Please select at least one day")
@@ -137,7 +100,7 @@ export function SignUpSection() {
         email: formData.email,
         phone: formData.phone,
         organization: organizationCombined,
-        role: finalRole,
+        role: "",
         assigned_day: assignedDayValue,
         assigned_date: assignedDateValue,
         ticket_type: ticketType,
@@ -209,17 +172,10 @@ export function SignUpSection() {
                     Your registration has been recorded. Use the payment details below to complete your booking.
                   </p>
 
-                  {ticketType === "single" && assignedDay && (
+                  {ticketType === "single" && (
                     <div className="flex items-center justify-center gap-2 text-primary font-semibold">
                       <Calendar className="w-5 h-5" />
-                      <span>You're registered for: {assignedDay.date}</span>
-                    </div>
-                  )}
-
-                  {ticketType === "full_week" && (
-                    <div className="flex items-center justify-center gap-2 text-primary font-semibold">
-                      <Calendar className="w-5 h-5" />
-                      <span>You're registered for all 5 days (26–30 January 2026).</span>
+                      <span>You're registered for: Single Day Pass</span>
                     </div>
                   )}
 
@@ -252,7 +208,7 @@ export function SignUpSection() {
                   <RadioGroup
                     value={ticketType}
                     onValueChange={(value) => {
-                      const v = value as "single" | "full_week" | "custom_days"
+                      const v = value as "single" | "custom_days"
                       setTicketType(v)
                       if (v !== "custom_days") {
                         setSelectedDays([])
@@ -274,33 +230,17 @@ export function SignUpSection() {
                         </div>
                       </Label>
                     </div>
-
-                    <div className="flex items-center space-x-3 p-4 border-2 rounded-lg hover:border-accent transition-colors cursor-pointer">
-                      <RadioGroupItem value="full_week" id="full_week" />
-                      <Label htmlFor="full_week" className="flex-1 cursor-pointer">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="font-semibold">Full Week Pass</p>
-                            <p className="text-sm text-muted-foreground">Access to all 5 days + networking</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-accent">${FULL_WEEK_PRICE}</p>
-                            <p className="text-xs text-muted-foreground">full week</p>
-                          </div>
-                        </div>
-                      </Label>
-                    </div>
                     <div className="flex items-center space-x-3 p-4 border-2 rounded-lg hover:border-accent transition-colors cursor-pointer">
                       <RadioGroupItem value="custom_days" id="custom_days" />
                       <Label htmlFor="custom_days" className="flex-1 cursor-pointer">
                         <div className="flex justify-between items-center">
                           <div>
-                            <p className="font-semibold">Custom Days</p>
-                            <p className="text-sm text-muted-foreground">Choose one or more days</p>
+                            <p className="font-semibold">Select Sessions</p>
+                            <p className="text-sm text-muted-foreground">Choose one or more sessions</p>
                           </div>
                           <div className="text-right">
                             <p className="text-2xl font-bold text-primary">${PER_DAY_PRICE}</p>
-                            <p className="text-xs text-muted-foreground">per day</p>
+                            <p className="text-xs text-muted-foreground">per session</p>
                           </div>
                         </div>
                       </Label>
@@ -311,19 +251,19 @@ export function SignUpSection() {
                     <div className="mt-4 space-y-3">
                       <p className="text-sm font-semibold">Select your days</p>
                       <div className="grid md:grid-cols-3 gap-3">
-                        {EVENT_DAYS.map((day) => (
+                        {EVENT_SESSIONS.map((session) => (
                           <label
-                            key={day.day}
+                            key={session.day}
                             className="flex items-center space-x-2 p-3 border-2 rounded-lg hover:border-accent transition-colors cursor-pointer"
                           >
                             <input
                               type="checkbox"
-                              checked={selectedDays.includes(day.day)}
-                              onChange={() => toggleDay(day.day)}
+                              checked={selectedDays.includes(session.day)}
+                              onChange={() => toggleDay(session.day)}
                               className="h-4 w-4"
                             />
                             <span className="text-sm">
-                              Day {day.day} - {day.date}
+                              Day {session.day} - {session.dateFull} - {session.title}
                             </span>
                           </label>
                         ))}
@@ -456,53 +396,6 @@ export function SignUpSection() {
                     />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role" className="text-base font-semibold">
-                    Your Role *
-                  </Label>
-                  <Select value={formData.role} onValueChange={handleRoleChange} required>
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roleOptions.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.role === "Other" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="roleOther" className="text-base font-semibold">
-                      Please specify your role
-                    </Label>
-                    <Input
-                      id="roleOther"
-                      name="roleOther"
-                      placeholder="Enter your role"
-                      value={formData.roleOther}
-                      onChange={handleChange}
-                      className="h-12 text-base"
-                    />
-                  </div>
-                )}
-
-                {assignedDay && ticketType === "single" && (
-                  <Alert className="bg-primary/5 border-primary/20">
-                    <Calendar className="h-4 w-4" />
-                    <AlertDescription>
-                      <span className="font-semibold">Based on your role, you'll attend:</span>
-                      <br />
-                      Day {assignedDay.day} - {assignedDay.date}
-                      <br />
-                      <span className="text-sm text-muted-foreground">{assignedDay.description}</span>
-                    </AlertDescription>
-                  </Alert>
-                )}
 
                 <div className="space-y-2">
                   <Label className="text-base font-semibold">Payment Method *</Label>

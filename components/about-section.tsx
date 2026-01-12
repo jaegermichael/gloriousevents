@@ -34,9 +34,10 @@ export function AboutSection() {
               About the <span className="text-primary">Event</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto text-pretty">
-              Step into the world of Artificial Intelligence with Alexander Morad, a globally recognized thought leader
-              and innovator. Over five days, you'll experience interactive workshops, inspiring talks, and practical
-              sessions designed to help you harness the power of AI in business, technology, and everyday life.
+              Under the theme "Shaping the Future Through Responsible & Inclusive Artificial Intelligence", this
+              week-long AI Talkshow Week with Alexander Morad offers an immersive, future-focused experience. You'll
+              join leaders, innovators, educators, and changemakers to explore how Artificial Intelligence can transform
+              governance, business, education, faith, and society—ethically, practically, and powerfully.
             </p>
           </div>
 
