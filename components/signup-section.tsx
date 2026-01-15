@@ -14,8 +14,8 @@ import { createClient } from "@/lib/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { EVENT_SESSIONS } from "@/lib/schedule-data"
 
-const SINGLE_DAY_PRICE = 50
-const PER_DAY_PRICE = 50
+const PHYSICAL_SESSION_PRICE = 50
+const ONLINE_SESSION_PRICE = 35
 
 const CASH_OFFICE_ADDRESS = "Your office address here"
 const CASH_CONTACT_NUMBER = "Your office contact number here"
@@ -44,6 +44,7 @@ export function SignUpSection() {
     companyPhone: "",
   })
   const [ticketType, setTicketType] = useState<"single" | "custom_days">("single")
+  const [attendanceType, setAttendanceType] = useState<"physical" | "online">("physical")
   const [selectedDays, setSelectedDays] = useState<number[]>([])
   const [paymentMethod, setPaymentMethod] = useState<string>("")
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -51,7 +52,8 @@ export function SignUpSection() {
   const [error, setError] = useState<string | null>(null)
   const [paymentLink, setPaymentLink] = useState<string>("")
 
-  const ticketPrice = ticketType === "single" ? SINGLE_DAY_PRICE : selectedDays.length * PER_DAY_PRICE
+  const perSessionPrice = attendanceType === "physical" ? PHYSICAL_SESSION_PRICE : ONLINE_SESSION_PRICE
+  const ticketPrice = ticketType === "single" ? perSessionPrice : selectedDays.length * perSessionPrice
 
   const toggleDay = (day: number) => {
     setSelectedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]))
@@ -69,17 +71,18 @@ export function SignUpSection() {
 
       let assignedDayValue = 1
       let assignedDateValue = ""
+      const attendanceLabel = attendanceType === "online" ? "Online" : "Physical"
 
       if (ticketType === "single") {
         assignedDayValue = 0
-        assignedDateValue = "Single Day Pass"
+        assignedDateValue = `${attendanceLabel} - Single Day Pass`
       } else {
         if (selectedDays.length === 0) {
-          throw new Error("Please select at least one day")
+          throw new Error("Please select at least one session")
         }
         const summary = formatSelectedDays(selectedDays)
         assignedDayValue = 0
-        assignedDateValue = summary
+        assignedDateValue = `${attendanceLabel} - ${summary}`
       }
 
       const displayName = formData.title ? `${formData.title} ${formData.fullName}` : formData.fullName
@@ -175,14 +178,19 @@ export function SignUpSection() {
                   {ticketType === "single" && (
                     <div className="flex items-center justify-center gap-2 text-primary font-semibold">
                       <Calendar className="w-5 h-5" />
-                      <span>You're registered for: Single Day Pass</span>
+                      <span>
+                        You're registered for: {attendanceType === "online" ? "Online - Single Day Pass" : "Physical - Single Day Pass"}
+                      </span>
                     </div>
                   )}
 
                   {ticketType === "custom_days" && selectedDays.length > 0 && (
                     <div className="flex items-center justify-center gap-2 text-primary font-semibold">
                       <Calendar className="w-5 h-5" />
-                      <span>You're registered for: {formatSelectedDays(selectedDays)}</span>
+                      <span>
+                        You're registered for: {attendanceType === "online" ? "Online - " : "Physical - "}
+                        {formatSelectedDays(selectedDays)}
+                      </span>
                     </div>
                   )}
 
@@ -224,7 +232,7 @@ export function SignUpSection() {
                             <p className="text-sm text-muted-foreground">Access to one assigned day</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-primary">$50</p>
+                            <p className="text-2xl font-bold text-primary">${perSessionPrice}</p>
                             <p className="text-xs text-muted-foreground">per session</p>
                           </div>
                         </div>
@@ -239,7 +247,7 @@ export function SignUpSection() {
                             <p className="text-sm text-muted-foreground">Choose one or more sessions</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-primary">${PER_DAY_PRICE}</p>
+                            <p className="text-2xl font-bold text-primary">${perSessionPrice}</p>
                             <p className="text-xs text-muted-foreground">per session</p>
                           </div>
                         </div>
@@ -247,9 +255,45 @@ export function SignUpSection() {
                     </div>
                   </RadioGroup>
 
+                  <div className="mt-4 space-y-3">
+                    <p className="text-sm font-semibold">How will you attend?</p>
+                    <RadioGroup
+                      value={attendanceType}
+                      onValueChange={(value) => setAttendanceType(value as "physical" | "online")}
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                    >
+                      <div className="flex items-center space-x-3 p-3 border-2 rounded-lg hover:border-accent transition-colors cursor-pointer">
+                        <RadioGroupItem value="physical" id="physical" />
+                        <Label htmlFor="physical" className="flex-1 cursor-pointer">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-semibold">Physical (on-site)</p>
+                              <p className="text-xs text-muted-foreground">${PHYSICAL_SESSION_PRICE} per session</p>
+                            </div>
+                          </div>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 border-2 rounded-lg hover:border-accent transition-colors cursor-pointer">
+                        <RadioGroupItem value="online" id="online" />
+                        <Label htmlFor="online" className="flex-1 cursor-pointer">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-semibold">Online (virtual)</p>
+                              <p className="text-xs text-muted-foreground">${ONLINE_SESSION_PRICE} per session</p>
+                            </div>
+                          </div>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-muted-foreground">
+                      Physical attendance: ${PHYSICAL_SESSION_PRICE} per session. Online attendance: ${ONLINE_SESSION_PRICE} per
+                      session.
+                    </p>
+                  </div>
+
                   {ticketType === "custom_days" && (
                     <div className="mt-4 space-y-3">
-                      <p className="text-sm font-semibold">Select your days</p>
+                      <p className="text-sm font-semibold">Select your sessions</p>
                       <div className="grid md:grid-cols-3 gap-3">
                         {EVENT_SESSIONS.map((session) => (
                           <label
@@ -272,7 +316,7 @@ export function SignUpSection() {
                   )}
                   <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
-                    <span>Teas and refreshments supplied at all sessions</span>
+                    <span>For physical attendees, teas and refreshments are supplied at all sessions.</span>
                   </p>
                 </div>
 
