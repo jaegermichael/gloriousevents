@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Calendar, MapPin } from "lucide-react"
 import Link from "next/link"
+import { ExhibitorSponsorButtons } from "@/components/exhibitor-sponsor-buttons"
 
 export function HeroSection() {
   return (
@@ -56,6 +57,7 @@ export function HeroSection() {
               <Link href="#about">Learn More</Link>
             </Button>
           </div>
+          <ExhibitorSponsorButtons />
         </div>
       </div>
     </section>
