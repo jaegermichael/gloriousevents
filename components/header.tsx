@@ -9,11 +9,12 @@ export function Header() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image
-              src="/globe.svg"
-              alt="Glorious Events"
-              width={180}
-              height={60}
+              src="/logo-glorios.png"
+              alt="GATIF GLORIOS – All-Time Functions P/L"
+              width={400}
+              height={120}
               className="h-12 w-auto"
+              priority
             />
           </div>
 

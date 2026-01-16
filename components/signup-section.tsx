@@ -17,6 +17,8 @@ import { EVENT_SESSIONS } from "@/lib/schedule-data"
 const PHYSICAL_SESSION_PRICE = 50
 const ONLINE_SESSION_PRICE = 35
 
+const GOOGLE_SHEET_WEBHOOK_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEET_WEBHOOK_URL
+
 const CASH_OFFICE_ADDRESS = "Your office address here"
 const CASH_CONTACT_NUMBER = "Your office contact number here"
 const CASH_PAYMENT_CLOSING_DATE = "Cash payments accepted until 20 January 2026"
@@ -110,6 +112,30 @@ export function SignUpSection() {
         ticket_price: ticketPrice,
         payment_status: "pending",
         payment_method: paymentMethod,
+      }
+
+      // Optionally send basic registration details to Google Sheets via Apps Script webhook
+      if (GOOGLE_SHEET_WEBHOOK_URL) {
+        try {
+          await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fullName: displayName,
+              email: formData.email,
+              phone: formData.phone,
+              organization: organizationCombined,
+              attendanceType,
+              ticketType,
+              selectedDays,
+              assignedDate: assignedDateValue,
+              ticketPrice,
+              paymentMethod,
+            }),
+          })
+        } catch (googleError) {
+          console.error("Failed to send data to Google Sheets", googleError)
+        }
       }
 
       const { data, error: insertError } = await supabase
