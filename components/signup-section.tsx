@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { CheckCircle2, Calendar, DollarSign, AlertCircle } from "lucide-react"
-import { createClient } from "@/lib/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { EVENT_SESSIONS } from "@/lib/schedule-data"
 
@@ -88,9 +87,6 @@ export function SignUpSection() {
       }
 
       const displayName = formData.title ? `${formData.title} ${formData.fullName}` : formData.fullName
-
-      const supabase = createClient()
-
       let organizationCombined = formData.organization
       if (formData.companyEmail || formData.companyPhone) {
         const parts: string[] = []
@@ -100,72 +96,59 @@ export function SignUpSection() {
         organizationCombined = parts.join(" | ")
       }
 
-      const registrationData = {
-        full_name: displayName,
-        email: formData.email,
-        phone: formData.phone,
-        organization: organizationCombined,
-        role: "",
-        assigned_day: assignedDayValue,
-        assigned_date: assignedDateValue,
-        ticket_type: ticketType,
-        ticket_price: ticketPrice,
-        payment_status: "pending",
-        payment_method: paymentMethod,
-      }
-
-      // Optionally send basic registration details to Google Sheets via Apps Script webhook
+      // Optionally send basic registration details to Google Sheets via Apps Script webhook (fire-and-forget)
       if (GOOGLE_SHEET_WEBHOOK_URL) {
-        try {
-          await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fullName: displayName,
-              email: formData.email,
-              phone: formData.phone,
-              organization: organizationCombined,
-              attendanceType,
-              ticketType,
-              selectedDays,
-              assignedDate: assignedDateValue,
-              ticketPrice,
-              paymentMethod,
-            }),
-          })
-        } catch (googleError) {
+        fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: displayName,
+            email: formData.email,
+            phone: formData.phone,
+            organization: organizationCombined,
+            attendanceType,
+            ticketType,
+            selectedDays,
+            assignedDate: assignedDateValue,
+            ticketPrice,
+            paymentMethod,
+          }),
+        }).catch((googleError) => {
           console.error("Failed to send data to Google Sheets", googleError)
-        }
+        })
       }
 
-      const { data, error: insertError } = await supabase
-        .from("registrations")
-        .insert(registrationData)
-        .select()
-        .single()
+      const sessionsSummary =
+        ticketType === "single" ? `${attendanceLabel} - Single Day Pass` : formatSelectedDays(selectedDays)
 
-      if (insertError) throw insertError
+      const whatsappMessage =
+        `New AI Talkshow registration:\n\n` +
+        `Name: ${displayName}\n` +
+        `Email: ${formData.email}\n` +
+        `Phone: ${formData.phone}\n` +
+        `Organization: ${organizationCombined || "N/A"}\n` +
+        `Attendance: ${attendanceLabel}\n` +
+        `Ticket type: ${ticketType === "single" ? "Single Day Pass" : "Selected Sessions"}\n` +
+        `Sessions: ${sessionsSummary}\n` +
+        `Payment method: ${paymentMethod}\n` +
+        `Total: $${ticketPrice}`
 
-      if (paymentMethod === "cash") {
-        setIsSubmitted(true)
-        return
-      }
+      const whatsappNumber = "263781565612"
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
 
-      const response = await fetch("/api/paynow/initiate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ registrationId: data.id }),
-      })
+      // Show success state locally, then redirect in the same tab so browsers don't block it as a popup
+      setIsSubmitted(true)
+      window.location.href = whatsappUrl
 
-      const paynowData = await response.json()
-
-      if (!response.ok) {
-        throw new Error(paynowData.error || "Failed to start PayNow payment")
-      }
-
-      window.location.href = paynowData.browserUrl
+      return
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.")
+      let message = err instanceof Error ? err.message : "Registration failed. Please try again."
+
+      if (typeof message === "string" && message.includes("@supabase/ssr")) {
+        message = "Registration failed. Please try again or contact us on WhatsApp."
+      }
+
+      setError(message)
     } finally {
       setIsLoading(false)
     }

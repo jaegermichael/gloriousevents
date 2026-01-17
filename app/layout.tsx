@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   description: "Join us for an exclusive AI Talkshow & Workshop in Harare with Alexander Morad, January 26-30, 2026",
   generator: "v0.app",
   icons: {
-    icon: "/globe.svg",
-    apple: "/globe.svg",
+    icon: "/logo-glorios.png",
+    apple: "/logo-glorios.png",
   },
 }
 

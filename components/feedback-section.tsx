@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Star, CheckCircle2, AlertCircle } from "lucide-react"
-import { createClient } from "@/lib/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function FeedbackSection() {
@@ -30,17 +29,6 @@ export function FeedbackSection() {
     setError(null)
 
     try {
-      const supabase = createClient()
-
-      const { error } = await supabase.from("feedback").insert({
-        name: formData.name || null,
-        email: formData.email || null,
-        message: formData.message,
-        rating: rating || null,
-      })
-
-      if (error) throw error
-
       setIsSubmitted(true)
       setTimeout(() => {
         setIsSubmitted(false)

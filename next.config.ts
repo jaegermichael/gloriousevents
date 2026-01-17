@@ -1,7 +1,13 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // Generate a fully static export (HTML, CSS, JS only)
+  output: "export",
 
-export default nextConfig;
+  // Disable Next.js image optimization so <Image> works on static hosting
+  images: {
+    unoptimized: true,
+  },
+}
+
+export default nextConfig
