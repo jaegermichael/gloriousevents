@@ -7,7 +7,7 @@ export function LiveChatButton() {
   const handleChatClick = () => {
     // This opens WhatsApp chat - replace with your actual WhatsApp number
     window.open(
-      "https://wa.me/263779467179?text=Hi,%20I%20have%20a%20question%20about%20Glorious%20Events%202026",
+      "https://wa.me/263781565612?text=Hi,%20I%20have%20a%20question%20about%20Glorious%20Events%202026",
       "_blank",
     )
   }
@@ -22,7 +22,7 @@ export function LiveChatButton() {
           aria-label="WhatsApp"
         >
           <a
-            href="https://wa.me/263779467179?text=Hi,%20I%20have%20a%20question%20about%20Glorious%20Events%202026"
+            href="https://wa.me/263781565612?text=Hi,%20I%20have%20a%20question%20about%20Glorious%20Events%202026"
             target="_blank"
             rel="noreferrer"
           >

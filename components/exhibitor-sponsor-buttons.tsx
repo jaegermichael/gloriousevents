@@ -25,7 +25,7 @@ export function ExhibitorSponsorButtons() {
   }
 
   const handleWhatsApp = () => {
-    const base = "https://wa.me/263779467179"
+    const base = "https://wa.me/263781565612"
     const text =
       mode === "sponsor"
         ? "Hi, I\'m interested in sponsorship opportunities for the AI Talkshow Week."

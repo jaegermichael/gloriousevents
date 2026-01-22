@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Glorious Events 2026 - AI Talkshow & Workshop",
   description: "Join us for an exclusive AI Talkshow & Workshop in Harare with Alexander Morad, January 26-30, 2026",
   generator: "v0.app",
+  verification: {
+    google: "EGCtihbDTkcQyI5-sMecSqmEpcoG7LhEWBFzTGdk6BU",
+  },
   icons: {
     icon: "/logo-glorios.png",
     apple: "/logo-glorios.png",

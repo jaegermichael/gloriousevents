@@ -19,7 +19,7 @@ const ONLINE_SESSION_PRICE = 35
 const GOOGLE_SHEET_WEBHOOK_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEET_WEBHOOK_URL
 
 const CASH_OFFICE_ADDRESS = "Your office address here"
-const CASH_CONTACT_NUMBER = "Your office contact number here"
+const CASH_CONTACT_NUMBER = "+263 78 156 5612"
 const CASH_PAYMENT_CLOSING_DATE = "Cash payments accepted until 20 January 2026"
 
 function formatSelectedDays(days: number[]): string {
@@ -37,6 +37,7 @@ function formatSelectedDays(days: number[]): string {
 export function SignUpSection() {
   const [formData, setFormData] = useState({
     title: "",
+    customTitle: "",
     fullName: "",
     email: "",
     phone: "",
@@ -86,7 +87,9 @@ export function SignUpSection() {
         assignedDateValue = `${attendanceLabel} - ${summary}`
       }
 
-      const displayName = formData.title ? `${formData.title} ${formData.fullName}` : formData.fullName
+      const resolvedTitle =
+        formData.title === "Other" ? (formData.customTitle ? formData.customTitle : "") : formData.title
+      const displayName = resolvedTitle ? `${resolvedTitle} ${formData.fullName}` : formData.fullName
       let organizationCombined = formData.organization
       if (formData.companyEmail || formData.companyPhone) {
         const parts: string[] = []
@@ -102,6 +105,7 @@ export function SignUpSection() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            title: resolvedTitle,
             fullName: displayName,
             email: formData.email,
             phone: formData.phone,
@@ -349,8 +353,25 @@ export function SignUpSection() {
                       <SelectItem value="Mr.">Mr.</SelectItem>
                       <SelectItem value="Mrs.">Mrs.</SelectItem>
                       <SelectItem value="Miss">Miss</SelectItem>
+                      <SelectItem value="Hon.">Hon.</SelectItem>
+                      <SelectItem value="Dr">Dr</SelectItem>
+                      <SelectItem value="Prof">Prof</SelectItem>
+                      <SelectItem value="Eng">Eng</SelectItem>
+                      <SelectItem value="Other">Other (please specify)</SelectItem>
                     </SelectContent>
                   </Select>
+                  {formData.title === "Other" && (
+                    <div className="mt-2">
+                      <Input
+                        id="customTitle"
+                        name="customTitle"
+                        placeholder="e.g. Pastor, Teacher, Head, Bishop"
+                        value={formData.customTitle}
+                        onChange={handleChange}
+                        className="h-12 text-base"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">

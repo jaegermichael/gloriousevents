@@ -22,15 +22,15 @@ export function Footer() {
               <h3 className="font-bold text-lg mb-4">Contact Us</h3>
               <div className="space-y-2 text-sm">
                 <a
-                  href="mailto:info@gloriousevents.com"
+                  href="mailto:info@gloriousevents.co.zw"
                   className="flex items-center gap-2 hover:text-accent transition-colors"
                 >
                   <Mail className="w-4 h-4" />
-                  info@gloriousevents.com
+                  info@gloriousevents.co.zw
                 </a>
-                <a href="tel:+263772849505" className="flex items-center gap-2 hover:text-accent transition-colors">
+                <a href="tel:+263781565612" className="flex items-center gap-2 hover:text-accent transition-colors">
                   <Phone className="w-4 h-4" />
-                  +263 77 284 9505
+                  +263 78 156 5612
                 </a>
               </div>
             </div>

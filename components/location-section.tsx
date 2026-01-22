@@ -2,6 +2,11 @@ import { Card } from "@/components/ui/card"
 import { MapPin, Navigation, Accessibility } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+const GOOGLE_MAPS_DIRECTIONS_URL =
+  "https://www.google.com/maps?q=No.+1+Hillside+Park,+Corner+Chiremba+Road+%26+Brooke%27s+Drive,+Hillside,+Harare,+Zimbabwe"
+const GOOGLE_MAPS_EMBED_URL =
+  "https://www.google.com/maps?q=No.+1+Hillside+Park,+Corner+Chiremba+Road+%26+Brooke%27s+Drive,+Hillside,+Harare,+Zimbabwe&output=embed"
+
 export function LocationSection() {
   return (
     <section id="location" className="py-20">
@@ -47,15 +52,28 @@ export function LocationSection() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  Get Directions
+                <Button
+                  asChild
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <a
+                    href={GOOGLE_MAPS_DIRECTIONS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Get Directions
+                  </a>
                 </Button>
               </div>
 
               <div className="h-64 md:h-auto bg-muted relative">
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                  <MapPin className="w-16 h-16" />
-                </div>
+                <iframe
+                  src={GOOGLE_MAPS_EMBED_URL}
+                  title="Map to No. 1 Hillside Park, Hillside, Harare"
+                  className="absolute inset-0 w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
             </div>
           </Card>
